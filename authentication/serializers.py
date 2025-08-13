@@ -1,10 +1,11 @@
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.password_validation import validate_password
+from django_redis import get_redis_connection
 from rest_framework import serializers
-from authentication.models import UserModel, EmailVerificationModel, BlacklistedAccessTokenModel
+from authentication.models import UserModel, BlacklistedAccessTokenModel
 from authentication.utils import (
     send_verification_email,
-    generate_expiry_time
+    generate_expiry_time, generate_code
 )
 from authentication.validators import validate_password_uppercase, validate_tokens
 from django.contrib.auth import authenticate
@@ -36,15 +37,27 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop("password_confirm", None)
-        validated_data["password"] = make_password(validated_data["password"])
+        password = validated_data.get("password")
+        if not password:
+            raise serializers.ValidationError({"password": "Password is required."})
+
+        validated_data["password"] = make_password(password)
         user = super().create(validated_data)
 
-        verification = EmailVerificationModel.objects.create(
-            user=user,
-            type=1,
-            expires_at=generate_expiry_time()
-        )
-        send_verification_email(user, verification.code)
+        code = generate_code()
+        expires_at = generate_expiry_time()
+
+        redis_client = get_redis_connection()
+        redis_key = f"email_verification:{user.email}"
+        redis_client.hset(redis_key, mapping={
+            'code': code,
+            'attempts': 0,
+            'expires_at': expires_at.isoformat(),
+            'block_until': ''
+        })
+        redis_client.expireat(redis_key, int(expires_at.timestamp()))
+
+        send_verification_email(user, code)
         return user
 
 

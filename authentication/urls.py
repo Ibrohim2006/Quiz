@@ -7,3 +7,4 @@ urlpatterns = [
     path("login/", LoginViewSet.as_view({"post": "login"}), name="login"),
     path("logout/", LogoutViewSet.as_view({"post": "logout"}), name="logout"),
 ]
+

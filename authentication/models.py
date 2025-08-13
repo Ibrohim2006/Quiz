@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from authentication.managers import UserManager
 import uuid
-from authentication.utils import generate_code
+from django.utils import timezone
 
 VerificationTypes = (
     (1, "REGISTER"),
@@ -11,18 +11,29 @@ VerificationTypes = (
 )
 
 
-class TimeStampedModel(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated at")
+class BaseModel(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        unique=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    def delete(self, using=None, keep_parents=False):
+        self.deleted_at = timezone.now()
+        self.save()
 
     class Meta:
         abstract = True
 
 
-class UserModel(AbstractUser, TimeStampedModel):
+class UserModel(AbstractUser, BaseModel):
     username = None
-    email = models.EmailField(unique=True, verbose_name="Email address")
-    is_verified = models.BooleanField(default=False, verbose_name="Is verified")
+    email = models.EmailField(unique=True)
+    is_verified = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -36,24 +47,6 @@ class UserModel(AbstractUser, TimeStampedModel):
         db_table = 'user'
         verbose_name = 'User'
         verbose_name_plural = 'Users'
-
-
-class EmailVerificationModel(TimeStampedModel):
-    user = models.ForeignKey(UserModel, models.SET_NULL, null=True, related_name="email_verifications")
-    key = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    code = models.PositiveIntegerField(default=generate_code)
-    type = models.IntegerField(choices=VerificationTypes, default=1)
-    attempts = models.IntegerField(default=0)
-    expires_at = models.DateTimeField(null=True, blank=True)
-    block_until = models.DateTimeField(null=True, blank=True)
-
-    def __str__(self):
-        return f"{self.user.email if self.user else 'Unknown'} - {self.code}"
-
-    class Meta:
-        db_table = 'email_verification'
-        verbose_name = 'Email Verification'
-        verbose_name_plural = 'Email Verifications'
 
 
 class BlacklistedAccessTokenModel(models.Model):
