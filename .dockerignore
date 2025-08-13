@@ -1,0 +1,49 @@
+# Version control
+.git
+.gitignore
+
+# Python virtual env
+.venv
+venv/
+env/
+
+# Python compiled files
+*.pyc
+__pycache__/
+
+# Editor files
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Dependency directories
+node_modules/
+
+# Build files
+build/
+dist/
+*.egg-info/
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.local
+.env*.local
+
+# Database files
+*.sqlite3
+*.db
+
+# Test files
+tests/
+test_*.py
+
+# Documentation
+docs/
