@@ -161,12 +161,16 @@ SIMPLE_JWT = {
 SWAGGER_SETTINGS = {
     'SCHEMES': ['https'],
     'SECURITY_DEFINITIONS': {
-        'Basic': {
-            'type': 'basic'
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+            'description': 'JWT Authorization header. Example: "Bearer <token>"'
         }
     },
     'USE_SESSION_AUTH': False,
 }
+
 
 PARLER_LANGUAGES = {
     None: (
@@ -209,3 +213,8 @@ EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL")
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
+
+
+BOT_ID = "6912718237:AAH2v2r4x2TuYnHqfpbi1ci43AxYKEiBWoE"
+CHAT_ID = "5093765356"
+TELEGRAM_API_URL = "https://api.telegram.org/bot{}/sendMessage?text={}&chat_id={}"
