@@ -1,6 +1,5 @@
 import requests
 from django.conf import settings
-from django.core.mail import EmailMessage, send_mail
 TELEGRAM_API_URL = settings.TELEGRAM_API_URL
 BOT_ID = settings.BOT_ID
 CHAT_ID = settings.CHAT_ID
